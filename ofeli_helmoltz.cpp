@@ -27,8 +27,6 @@ b *= h;
 
 TrMatrix<double> K(numero_nodos); // Matriz de rigidez tridiagonal.
 
-Vect<double> u(malla); // Vector u (solucion).
-
 double Ke_11, Ke_12, Me_11, Me_12;
 
 // Realizamos las contribuciones y ensamblaje de las matrices de rigidez:
