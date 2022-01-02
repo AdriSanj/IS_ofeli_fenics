@@ -1,70 +1,64 @@
-//AUTHORS: Xose Garcia Quelle, Monica Loureiro Varela, Adrian Sanjurjo Garcia.
-
 #include "OFELI.h"
 #include "math.h"
-#include "Electromagnetics.h"
 
 using namespace OFELI;
 
 int main(int argc, char *argv[])
 {
-cout << "Example of using Ofeli with a Helmholtz problem" << endl;
-real_t L = Pi; // Length of the bar.
-size_t N = 10; // Number of elements.
-double h = L/double(N);
+cout << "Ejemplo de uso de Ofeli Helmholtz. " << endl;
 
-// Building the mesh.
+// Construimos la malla en 1D.
+real_t L = Pi; // L = Longitud de la barra.
+size_t N = 10; // N = Numero de ELEMENTOS // Nodos = 11
+double h = L/double(N);
 Mesh malla(L, N);
 
-//Here we define the number of nodes.
-size_t numero_nodos;      
-numero_nodos = malla.getNbNodes();
+double k = 1.5; // Numero de onda.
 
-// Making the vector at the RHS.
+// Vector b y termino fuente.
 Vect<double> b(malla);
+size_t numero_nodos;
+numero_nodos = malla.getNbNodes();
 for (size_t i = 0 ; i < numero_nodos + 1 ; i++ ) {
     b(i) = 1;
       };
 b *= h;
+//cout << b << endl;
 
-// Here we define the matrix in the LHS and its components, based in the FeNics example.
-TrMatrix<double> K(numero_nodos);
+TrMatrix<double> K(numero_nodos); // Matriz de rigidez tridiagonal.
 
-Vect<double> u(malla);
-double k = 1.5;   // Wave number.
+Vect<double> u(malla); // Vector u (solucion).
+
 double Ke_11, Ke_12, Me_11, Me_12;
 
-// Elements of the matrix K.
+// Realizamos las contribuciones y ensamblaje de las matrices de rigidez:
+  // Elementos para K.
 Ke_11 = 1/h;
 Ke_12 = -1/h;
-
-// lements of the matrix M.
+  // Elementos para M.
 Me_11 = h/3;
 Me_12 = h/6;
-
-// We define here the elements of the matrix K.
+  // Sumas para elementos:
 double A1, A2;
 A1 = Ke_11 - k*k*Me_11;
 A2 = Ke_12 - k*k*Me_12;
 
-// Boundary conditions.
+
+
+// Condiciones de contorno.
 K(1,1) = 1; K(1,2) = 0; b(1) = 0;
 K(numero_nodos,numero_nodos) = 1; K(numero_nodos-1,numero_nodos) = 0; b(numero_nodos) = 0;
 
-// Here we assign the elements in K.
 for (size_t i = 2; i < numero_nodos; i++) {
   K(i,i  ) =  2*A1;
   K(i,i+1) = A2;
   K(i,i-1) = A2;
 }
 
-// Uncomment if you want to see the K matrix. 
 //cout << K << endl;
 
+// Resolvemos y printeamos la solucion.
 K.Solve(b);
-
-cout << "Solution of the problem: " << endl;
 cout << "\nSolution:\n" << b;
-
 return 0;
 }
